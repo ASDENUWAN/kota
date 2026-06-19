@@ -30,8 +30,7 @@ const app = express();
 
 const PORT = process.env.PORT || 5001;
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
-
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || CLIENT_URL;
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -44,33 +43,50 @@ const RECIPIENTS = {
 };
 
 // ============================================================
-// MIDDLEWARE
+// CORS CONFIG
+// Allows local React frontend and deployed frontend
 // ============================================================
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow tools like Postman or same-server requests with no origin
-      if (!origin) return callback(null, true);
+function cleanOrigin(origin) {
+  if (!origin) return "";
+  return origin.trim().replace(/\/$/, "");
+}
 
-      const allowedOrigins = [
-        CORS_ORIGIN,
-        CLIENT_URL,
-        "http://localhost:5173",
-        "http://localhost:3000",
-      ];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  cleanOrigin(CLIENT_URL),
+  cleanOrigin(CORS_ORIGIN),
+].filter(Boolean);
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow Postman, curl, server health checks, and same-origin requests
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      return callback(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-  }),
-);
+    const cleanedOrigin = cleanOrigin(origin);
 
+    if (allowedOrigins.includes(cleanedOrigin)) {
+      return callback(null, true);
+    }
+
+    console.log("Blocked by CORS:", cleanedOrigin);
+    console.log("Allowed origins:", allowedOrigins);
+
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
+// Parse incoming JSON bodies
 app.use(express.json({ limit: "10mb" }));
 
 // ============================================================
@@ -163,8 +179,7 @@ function safeFileName(value) {
 // ============================================================
 
 function generateHTML(form) {
-  // Optional logo path.
-  // Create this folder if needed:
+  // Optional logo path:
   // backend/images/footerlogo.png
   const logoPath = path.join(__dirname, "images", "footerlogo.png");
 
@@ -566,13 +581,17 @@ app.post("/api/reports", async (req, res) => {
 
     await sendEmail({
       to: mailRecipients,
-      subject: `New feedback safety report comes from ${form.reporterName || "client"}`,
+      subject: `New feedback safety report comes from ${
+        form.reporterName || "client"
+      }`,
       html: `
-                <p>Dear Safety Manager,</p>
-                <p>New feedback safety report comes from ${escapeHtml(form.reporterName || "client")}.</p>
-                <p>Click the link below to proceed:</p>
-                <p><a href="${managerLink}">${managerLink}</a></p>
-            `,
+        <p>Dear Safety Manager,</p>
+        <p>New feedback safety report comes from ${escapeHtml(
+          form.reporterName || "client",
+        )}.</p>
+        <p>Click the link below to proceed:</p>
+        <p><a href="${managerLink}">${managerLink}</a></p>
+      `,
     });
 
     res.status(200).json({
@@ -665,10 +684,10 @@ app.put("/api/reports/:id", async (req, res) => {
         to: [RECIPIENTS.SAFETY_COMMITTEE],
         subject: "AeroKnow Safety Report - Action Required (Part C)",
         html: `
-                    <p>The Safety Manager has completed Part B of a Safety Report.</p>
-                    <p>Please click the link below to review Parts A & B, and fill out Part C:</p>
-                    <p><a href="${committeeLink}">${committeeLink}</a></p>
-                `,
+          <p>The Safety Manager has completed Part B of a Safety Report.</p>
+          <p>Please click the link below to review Parts A & B, and fill out Part C:</p>
+          <p><a href="${committeeLink}">${committeeLink}</a></p>
+        `,
       });
 
       return res.status(200).json({
@@ -755,7 +774,9 @@ app.post("/api/reports/:id/pdf", async (req, res) => {
 
     res.set({
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="AeroKnow_Safety_Report_${safeFileName(form.dateOfEvent)}.pdf"`,
+      "Content-Disposition": `attachment; filename="AeroKnow_Safety_Report_${safeFileName(
+        form.dateOfEvent,
+      )}.pdf"`,
       "Content-Length": pdfBuffer.length,
     });
 
@@ -787,12 +808,18 @@ app.get("/api/health", async (req, res) => {
       status: "Server is running",
       database: "MongoDB connected",
       emailUser: process.env.EMAIL_USER ? "Configured" : "Missing",
+      clientUrl: CLIENT_URL,
+      corsOrigin: CORS_ORIGIN,
+      allowedOrigins,
       time: new Date().toISOString(),
     });
   } catch (error) {
     res.status(500).json({
       status: "Server running but database failed",
       error: error.message,
+      clientUrl: CLIENT_URL,
+      corsOrigin: CORS_ORIGIN,
+      allowedOrigins,
       time: new Date().toISOString(),
     });
   }
@@ -808,5 +835,6 @@ app.listen(PORT, () => {
   console.log("  Port:", PORT);
   console.log("  Client URL:", CLIENT_URL);
   console.log("  CORS Origin:", CORS_ORIGIN);
+  console.log("  Allowed Origins:", allowedOrigins);
   console.log("====================================");
 });
