@@ -1,11 +1,11 @@
 // ============================================================
 // server.js – AeroKnow Safety Report BACKEND with MongoDB
-// Email sending: Nodemailer + Gmail App Password
+// Email sending: Brevo Transactional Email API
 //
 // What this file does:
 //   1. Accepts form data from React
 //   2. Saves form data to MongoDB Atlas
-//   3. Sends email links using Nodemailer
+//   3. Sends email links using Brevo
 //   4. Loads saved reports by ID
 //   5. Updates reports for manager / committee
 //   6. Generates and downloads PDF using Puppeteer
@@ -15,7 +15,6 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
@@ -30,11 +29,16 @@ const app = express();
 
 const PORT = process.env.PORT || 5001;
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || CLIENT_URL;
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "aeroknow_safety";
+
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const EMAIL_FROM = process.env.EMAIL_FROM || "sachinthaakarawita@gmail.com";
+const EMAIL_FROM_NAME =
+  process.env.EMAIL_FROM_NAME || "AeroKnow Safety Reports";
 
 const RECIPIENTS = {
   SAFETY_MANAGER: process.env.SAFETY_MANAGER_EMAIL || "ishananjana20@gmail.com",
@@ -44,7 +48,6 @@ const RECIPIENTS = {
 
 // ============================================================
 // CORS CONFIG
-// Allows local React frontend and deployed frontend
 // ============================================================
 
 function cleanOrigin(origin) {
@@ -61,7 +64,6 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow Postman, curl, server health checks, and same-origin requests
     if (!origin) {
       return callback(null, true);
     }
@@ -85,8 +87,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-
-// Parse incoming JSON bodies
 app.use(express.json({ limit: "10mb" }));
 
 // ============================================================
@@ -121,35 +121,70 @@ async function getReportsCollection() {
 }
 
 // ============================================================
-// EMAIL SETUP – Nodemailer Gmail
+// BREVO EMAIL SETUP
 // ============================================================
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+function normalizeRecipients(to) {
+  const recipients = Array.isArray(to) ? to : [to];
+
+  return recipients
+    .filter(Boolean)
+    .map((email) => String(email).trim())
+    .filter((email) => email.includes("@"))
+    .map((email) => ({ email }));
+}
 
 async function sendEmail({ to, subject, html }) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.log("EMAIL_USER or EMAIL_PASS missing. Email not sent.");
+  if (!BREVO_API_KEY) {
+    console.log("BREVO_API_KEY missing. Email not sent.");
     console.log("Email would send to:", to);
     console.log("Subject:", subject);
     return;
   }
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to,
+  const recipients = normalizeRecipients(to);
+
+  if (recipients.length === 0) {
+    console.log("No valid email recipients. Email not sent.");
+    return;
+  }
+
+  const payload = {
+    sender: {
+      name: EMAIL_FROM_NAME,
+      email: EMAIL_FROM,
+    },
+    to: recipients,
     subject,
-    html,
+    htmlContent: html,
+  };
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      "api-key": BREVO_API_KEY,
+    },
+    body: JSON.stringify(payload),
   });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    console.error("Brevo email failed:", response.status, responseText);
+    throw new Error(`Brevo email failed: ${response.status} ${responseText}`);
+  }
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return responseText;
+  }
 }
 
 // ============================================================
-// SMALL SECURITY HELPERS FOR PDF HTML
+// SMALL SECURITY HELPERS FOR PDF HTML / EMAIL HTML
 // ============================================================
 
 function escapeHtml(value) {
@@ -174,13 +209,79 @@ function safeFileName(value) {
 }
 
 // ============================================================
+// EMAIL TEMPLATES
+// ============================================================
+
+function managerEmailTemplate({ form, managerLink }) {
+  const reporterName = escapeHtml(form.reporterName || "client");
+
+  return `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+      <h2 style="color: #0077b6;">AeroKnow Safety Report</h2>
+
+      <p>Dear Safety Manager,</p>
+
+      <p>A new safety report has been submitted by <strong>${reporterName}</strong>.</p>
+
+      <p>Please click the button below to review Part A and complete Part B.</p>
+
+      <p style="margin: 24px 0;">
+        <a href="${managerLink}"
+           style="background: #0077b6; color: #ffffff; padding: 12px 18px;
+                  text-decoration: none; border-radius: 4px; display: inline-block;">
+          Open Safety Report
+        </a>
+      </p>
+
+      <p>If the button does not work, copy and paste this link into your browser:</p>
+      <p><a href="${managerLink}">${managerLink}</a></p>
+
+      <hr />
+
+      <p style="font-size: 12px; color: #555;">
+        This is an automated email from AeroKnow Safety Reports.
+      </p>
+    </div>
+  `;
+}
+
+function committeeEmailTemplate({ committeeLink }) {
+  return `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+      <h2 style="color: #0077b6;">AeroKnow Safety Report</h2>
+
+      <p>Dear Safety Committee,</p>
+
+      <p>The Safety Manager has completed Part B of a Safety Report.</p>
+
+      <p>Please click the button below to review Parts A and B, then complete Part C.</p>
+
+      <p style="margin: 24px 0;">
+        <a href="${committeeLink}"
+           style="background: #0077b6; color: #ffffff; padding: 12px 18px;
+                  text-decoration: none; border-radius: 4px; display: inline-block;">
+          Complete Part C
+        </a>
+      </p>
+
+      <p>If the button does not work, copy and paste this link into your browser:</p>
+      <p><a href="${committeeLink}">${committeeLink}</a></p>
+
+      <hr />
+
+      <p style="font-size: 12px; color: #555;">
+        This is an automated email from AeroKnow Safety Reports.
+      </p>
+    </div>
+  `;
+}
+
+// ============================================================
 // generateHTML(form)
 // Builds the full PDF HTML.
 // ============================================================
 
 function generateHTML(form) {
-  // Optional logo path:
-  // backend/images/footerlogo.png
   const logoPath = path.join(__dirname, "images", "footerlogo.png");
 
   let logoSrc = "";
@@ -337,7 +438,11 @@ function generateHTML(form) {
 
         <div class="form-header">
             <div class="header-logo" style="margin-top: 0.25in;">
-                ${logoSrc ? `<img src="${logoSrc}" alt="AeroKnow Logo" style="width: 150px;" />` : ""}
+                ${
+                  logoSrc
+                    ? `<img src="${logoSrc}" alt="AeroKnow Logo" style="width: 150px;" />`
+                    : ""
+                }
             </div>
             <div class="header-easa">EASA.21J.791/LV.21G.0001</div>
             <div class="header-title-bar">
@@ -548,7 +653,7 @@ function generateHTML(form) {
     </div>
 </body>
 </html>
-    `;
+  `;
 }
 
 // ============================================================
@@ -584,14 +689,7 @@ app.post("/api/reports", async (req, res) => {
       subject: `New feedback safety report comes from ${
         form.reporterName || "client"
       }`,
-      html: `
-        <p>Dear Safety Manager,</p>
-        <p>New feedback safety report comes from ${escapeHtml(
-          form.reporterName || "client",
-        )}.</p>
-        <p>Click the link below to proceed:</p>
-        <p><a href="${managerLink}">${managerLink}</a></p>
-      `,
+      html: managerEmailTemplate({ form, managerLink }),
     });
 
     res.status(200).json({
@@ -681,13 +779,9 @@ app.put("/api/reports/:id", async (req, res) => {
       const committeeLink = `${CLIENT_URL}/?id=${id}&role=committee`;
 
       await sendEmail({
-        to: [RECIPIENTS.SAFETY_COMMITTEE],
-        subject: "AeroKnow Safety Report - Action Required (Part C)",
-        html: `
-          <p>The Safety Manager has completed Part B of a Safety Report.</p>
-          <p>Please click the link below to review Parts A & B, and fill out Part C:</p>
-          <p><a href="${committeeLink}">${committeeLink}</a></p>
-        `,
+        to: RECIPIENTS.SAFETY_COMMITTEE,
+        subject: "AeroKnow Safety Report - Action Required Part C",
+        html: committeeEmailTemplate({ committeeLink }),
       });
 
       return res.status(200).json({
@@ -807,7 +901,9 @@ app.get("/api/health", async (req, res) => {
     res.json({
       status: "Server is running",
       database: "MongoDB connected",
-      emailUser: process.env.EMAIL_USER ? "Configured" : "Missing",
+      brevo: BREVO_API_KEY ? "Configured" : "Missing",
+      emailFrom: EMAIL_FROM,
+      emailFromName: EMAIL_FROM_NAME,
       clientUrl: CLIENT_URL,
       corsOrigin: CORS_ORIGIN,
       allowedOrigins,
@@ -817,6 +913,9 @@ app.get("/api/health", async (req, res) => {
     res.status(500).json({
       status: "Server running but database failed",
       error: error.message,
+      brevo: BREVO_API_KEY ? "Configured" : "Missing",
+      emailFrom: EMAIL_FROM,
+      emailFromName: EMAIL_FROM_NAME,
       clientUrl: CLIENT_URL,
       corsOrigin: CORS_ORIGIN,
       allowedOrigins,
@@ -835,6 +934,8 @@ app.listen(PORT, () => {
   console.log("  Port:", PORT);
   console.log("  Client URL:", CLIENT_URL);
   console.log("  CORS Origin:", CORS_ORIGIN);
+  console.log("  Brevo:", BREVO_API_KEY ? "Configured" : "Missing");
+  console.log("  Email From:", EMAIL_FROM);
   console.log("  Allowed Origins:", allowedOrigins);
   console.log("====================================");
 });

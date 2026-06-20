@@ -5,7 +5,7 @@ import logoImg from "../images/footerlogo.png";
 //  IMPORTANT: Update this to your deployed client URL
 //  For local dev, this is automatically http://localhost:5173
 // ====================================================
-const API_BASE = "https://kota-cta3.onrender.com/api";
+const API_BASE = "http://localhost:5001/api";
 
 // -------------------------------------------------------
 // SafetyForm Component
