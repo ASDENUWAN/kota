@@ -1,126 +1,142 @@
 /* ============================================================
-   AeroKnow Safety Report - Print/PDF Styles
-   Exact replica of the A4 PDF form
+   AeroKnow Safety Report - Responsive Print/PDF Styles
+   Desktop: A4 PDF replica
+   Mobile: Same design, stacked and readable
 ============================================================ */
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-    font-family: Verdana, sans-serif;
-    background: #e5e7eb; /* Gray background outside the page */
-    color: #000;
-    font-size: 12pt;
-    line-height: 1.5;
-    padding: 20px 0;
+  font-family: Verdana, sans-serif;
+  background: #e5e7eb;
+  color: #000;
+  font-size: 12pt;
+  line-height: 1.5;
+  padding: 20px 0;
 }
 
 /* ---------- APP WRAPPER & A4 PAGE ---------- */
 .app-wrapper {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .form-container {
-    width: 210mm; /* Exact A4 width */
-    min-height: 297mm; /* Exact A4 height */
-    background: #fff;
-    padding: 0.25in 0.25in 1in 1in; /* Exact DOCX margins adjusted */
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    margin: 0 auto;
-    position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  padding: 0.25in 0.25in 1in 1in;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
 }
 
 /* ---------- HEADER ---------- */
 .form-header {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .header-logo {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.header-logo img {
+  max-width: 150px;
+  height: auto;
 }
 
 .logo-icon {
-    margin-left: 20px;
+  margin-left: 20px;
 }
 
 .logo-text {
-    font-size: 24px;
-    font-weight: bold;
-    color: #0077b6; /* Match logo blue */
-    margin-top: -10px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #0077b6;
+  margin-top: -10px;
 }
 
 .header-easa {
-    font-size: 14px;
-    font-weight: bold;
-    border-bottom: 2px solid #000;
-    padding-bottom: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 2px solid #000;
+  padding-bottom: 4px;
 }
 
 .header-title-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 4px;
-    font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 14px;
 }
 
 .header-title {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .header-meta {
-    font-size: 12px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 /* ---------- MAIN TITLE ---------- */
 .form-main-title {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    margin: 20px 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 20px 0;
 }
 
 /* ---------- SECTIONS ---------- */
 .form-section {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .section-title {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .section-note {
-    margin-bottom: 15px;
-    font-size: 14px;
+  margin-bottom: 15px;
+  font-size: 14px;
 }
 
 /* ---------- FORM ROWS ---------- */
 .form-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .form-group {
-    display: flex;
-    align-items: baseline;
-    margin-right: 20px;
-    flex-grow: 1;
+  display: flex;
+  align-items: baseline;
+  margin-right: 20px;
+  flex-grow: 1;
+  min-width: 0;
 }
 
 .form-group label {
-    margin-right: 5px;
-    white-space: nowrap;
+  margin-right: 5px;
+  white-space: nowrap;
 }
 
 /* ---------- INPUTS ---------- */
@@ -128,178 +144,488 @@ input[type="text"],
 input[type="date"],
 input[type="time"],
 input[type="email"] {
-    flex-grow: 1;
-    border: none;
-    border-bottom: 1px dotted #000;
-    outline: none;
-    font-family: inherit;
-    font-size: 12pt;
-    padding: 0 5px;
-    background: transparent;
-    min-width: 100px;
+  flex-grow: 1;
+  border: none;
+  border-bottom: 1px dotted #000;
+  outline: none;
+  font-family: inherit;
+  font-size: 12pt;
+  padding: 0 5px;
+  background: transparent;
+  min-width: 100px;
+  max-width: 100%;
+  color: #000;
 }
 
 textarea {
-    width: 100%;
-    border: 1px solid #000;
-    outline: none;
-    font-family: inherit;
-    font-size: 12pt;
-    padding: 10px;
-    resize: none;
-    margin-top: 5px;
-    min-height: 200px;
+  width: 100%;
+  border: 1px solid #000;
+  outline: none;
+  font-family: inherit;
+  font-size: 12pt;
+  padding: 10px;
+  resize: vertical;
+  margin-top: 5px;
+  min-height: 200px;
+  background: transparent;
+  color: #000;
+}
+
+input:disabled,
+textarea:disabled {
+  color: #000;
+  opacity: 1;
+  -webkit-text-fill-color: #000;
 }
 
 /* ---------- SCALES ---------- */
 .scale-container {
-    width: 100%;
-    margin-bottom: 15px;
+  width: 100%;
+  margin-bottom: 15px;
 }
 
 .scale-question {
-    margin-bottom: 5px;
+  margin-bottom: 5px;
 }
 
 .scale-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
 }
 
 .scale-label {
-    flex: 1;
+  flex: 1;
 }
 
 .scale-label.right {
-    text-align: right;
+  text-align: right;
 }
 
 .scale-numbers {
-    display: flex;
-    justify-content: space-between;
-    flex: 2;
-    padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  flex: 2;
+  padding: 0 20px;
+  gap: 8px;
 }
 
 .scale-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
 }
 
 .scale-option input {
-    margin-top: 5px;
-    cursor: pointer;
+  margin-top: 5px;
+  cursor: pointer;
 }
 
 /* ---------- AGREED SECTION ---------- */
 .agreed-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
 }
 
 .agreed-role {
-    width: 250px;
+  width: 250px;
 }
 
 .agreed-date {
-    display: flex;
-    align-items: baseline;
-    flex-grow: 1;
+  display: flex;
+  align-items: baseline;
+  flex-grow: 1;
+  min-width: 0;
 }
 
 /* ---------- BUTTONS ---------- */
 .submit-wrapper {
-    text-align: center;
-    margin-top: 40px;
+  text-align: center;
+  margin-top: 40px;
 }
 
 .submit-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    background: #000;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  background: #000;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
 .submit-btn:disabled {
-    background: #666;
+  background: #666;
+  cursor: not-allowed;
 }
 
 .status-message {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
-.status-message.success { color: green; }
-.status-message.error { color: red; }
 
-/* Hide submit button when printing */
-@media print {
-    body { background: #fff; padding: 0; }
-    .form-container { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; }
-    .submit-wrapper { display: none; }
-    .status-message { display: none; }
+.status-message.success {
+  color: green;
+}
+
+.status-message.error {
+  color: red;
 }
 
 /* ---------- ROLE BADGE & NOTICES ---------- */
 .role-badge {
-    background: #0077b6;
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    display: inline-block;
-    font-size: 14px;
+  background: #0077b6;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  display: inline-block;
+  font-size: 14px;
 }
 
 .readonly-notice {
-    color: #d9534f;
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    background: #fdf2f2;
-    padding: 5px 10px;
-    border-radius: 3px;
-    display: inline-block;
+  color: #d9534f;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  background: #fdf2f2;
+  padding: 5px 10px;
+  border-radius: 3px;
+  display: inline-block;
 }
 
 /* ---------- READ-ONLY SCALE DISPLAY ---------- */
 .scale-num-display {
-    width: 25px;
-    height: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    margin-top: 5px;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-top: 5px;
 }
 
 .scale-num-display.selected {
-    background: #000;
-    color: #fff;
-    font-weight: bold;
+  background: #000;
+  color: #fff;
+  font-weight: bold;
 }
 
-/* ---------- BUTTONS ---------- */
+/* ---------- BUTTON GROUP ---------- */
 .btn-group {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
 }
 
 .btn-secondary {
-    background: #6c757d;
+  background: #6c757d;
 }
 
 .btn-secondary:hover {
-    background: #5a6268;
+  background: #5a6268;
+}
+
+/* ============================================================
+   TABLET RESPONSIVE
+============================================================ */
+@media screen and (max-width: 900px) {
+  body {
+    padding: 12px;
+    font-size: 11pt;
+  }
+
+  .form-container {
+    width: 100%;
+    max-width: 210mm;
+    min-height: auto;
+    padding: 28px;
+  }
+
+  .header-title-bar {
+    flex-wrap: wrap;
+  }
+
+  .header-meta {
+    white-space: normal;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  input[type="email"],
+  textarea {
+    font-size: 11pt;
+  }
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE
+============================================================ */
+@media screen and (max-width: 600px) {
+  body {
+    padding: 0;
+    background: #fff;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+
+  .app-wrapper {
+    display: block;
+  }
+
+  .form-container {
+    width: 100%;
+    min-height: auto;
+    padding: 18px 14px 40px;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .form-header {
+    margin-bottom: 16px;
+  }
+
+  .header-logo {
+    margin-top: 0 !important;
+    align-items: center;
+  }
+
+  .header-logo img {
+    width: 130px !important;
+  }
+
+  .header-easa {
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .header-title-bar {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .header-title {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .header-meta {
+    display: block;
+    font-size: 11px;
+  }
+
+  .form-main-title {
+    font-size: 16px;
+    margin: 16px 0;
+  }
+
+  .section-title {
+    font-size: 13px;
+  }
+
+  .section-note {
+    font-size: 12px;
+  }
+
+  .form-row {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    display: block;
+    width: 100% !important;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-right: 0;
+    margin-bottom: 3px;
+    white-space: normal;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  input[type="email"] {
+    width: 100%;
+    min-width: 0;
+    font-size: 16px;
+    padding: 4px 2px;
+  }
+
+  textarea {
+    font-size: 16px;
+    min-height: 160px;
+    padding: 8px;
+  }
+
+  .scale-question {
+    font-size: 12.5px;
+    margin-bottom: 8px;
+  }
+
+  .scale-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .scale-label {
+    flex: 1 1 calc(50% - 6px);
+    font-size: 11px;
+  }
+
+  .scale-label.right {
+    text-align: right;
+  }
+
+  .scale-numbers {
+    order: 3;
+    flex: 1 1 100%;
+    padding: 4px 0 0;
+    gap: 4px;
+  }
+
+  .scale-option {
+    flex: 1;
+  }
+
+  .scale-option input {
+    transform: scale(1.1);
+  }
+
+  .scale-num-display {
+    width: 24px;
+    height: 24px;
+  }
+
+  .agreed-row {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .agreed-role {
+    width: 100% !important;
+    margin-bottom: 4px;
+  }
+
+  .agreed-date {
+    display: block;
+    width: 100%;
+  }
+
+  .agreed-date label {
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .agreed-row > div {
+    width: 100% !important;
+  }
+
+  .agreed-row > div[style] {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .agreed-row div[style*="display: flex"] {
+    display: block !important;
+  }
+
+  .submit-wrapper {
+    margin-top: 28px;
+  }
+
+  .btn-group {
+    display: block;
+  }
+
+  .submit-btn {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+
+  .readonly-notice,
+  .role-badge {
+    font-size: 12px;
+  }
+}
+
+/* ============================================================
+   VERY SMALL MOBILE
+============================================================ */
+@media screen and (max-width: 380px) {
+  .form-container {
+    padding: 14px 10px 36px;
+  }
+
+  .form-main-title {
+    font-size: 15px;
+  }
+
+  .header-logo img {
+    width: 115px !important;
+  }
+
+  .scale-label {
+    font-size: 10px;
+  }
+
+  .scale-option span {
+    font-size: 11px;
+  }
+}
+
+/* ============================================================
+   PRINT / PDF
+============================================================ */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    background: #fff;
+    padding: 0;
+  }
+
+  .app-wrapper {
+    display: block;
+  }
+
+  .form-container {
+    box-shadow: none;
+    margin: 0;
+    padding: 0.25in 0.25in 1in 1in;
+    width: 210mm;
+    min-height: 297mm;
+    overflow: visible;
+  }
+
+  .submit-wrapper,
+  .status-message {
+    display: none;
+  }
+
+  input,
+  textarea {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
