@@ -4,8 +4,8 @@
   "description": "Backend for AeroKnow Safety Report - sends form data via email",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node init && node server.js",
+    "dev": "node init && node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
